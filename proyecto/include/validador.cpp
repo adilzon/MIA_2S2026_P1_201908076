@@ -10,14 +10,47 @@ Validador::Validador() {}
 vector<Parametro> Validador::parsearParametros(vector<string> tokens, vector<string> &errores)
 {
     vector<Parametro> params;
+    vector<string> banderasValidas = {"r"}; // únicos parámetros que pueden ir sin '=' (según el enunciado)
+
     for (string tk : tokens)
     {
+        // Marcador especial generado por el Scanner cuando no cerró una comilla
+        if (tk.rfind("__ERROR_COMILLA__=", 0) == 0)
+        {
+            string nombreParam = tk.substr(string("__ERROR_COMILLA__=").length());
+            errores.push_back("Comilla sin cerrar en el valor de -" + nombreParam);
+            continue;
+        }
+
         size_t pos = tk.find("=");
         if (pos == string::npos)
         {
-            errores.push_back("Parametro mal formado (falta '='): \"-" + tk + "\"");
+            // No tiene '=': solo es válido si es una bandera reconocida (ej. -r)
+            string nombreUpper = tk;
+            for (char &c : nombreUpper) c = toupper(c);
+
+            bool esBandera = false;
+            for (string b : banderasValidas)
+            {
+                string bUpper = b;
+                for (char &c : bUpper) c = toupper(c);
+                if (nombreUpper == bUpper) { esBandera = true; break; }
+            }
+
+            if (esBandera)
+            {
+                Parametro p;
+                p.nombre = tk;
+                p.valor = "";
+                params.push_back(p);
+            }
+            else
+            {
+                errores.push_back("Parametro mal formado (falta '='): \"-" + tk + "\"");
+            }
             continue;
         }
+
         string nombre = tk.substr(0, pos);
         string valor = tk.substr(pos + 1);
 

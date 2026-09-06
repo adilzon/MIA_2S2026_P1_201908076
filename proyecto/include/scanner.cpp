@@ -309,17 +309,18 @@ vector<string> scanner::split_tokens(string text)
             i++;
         }
 
-        // Caso: parámetro tipo bandera, sin '=' (ej. "-r")
+        // CASO MODIFICADO: parámetro sin '=' (puede ser una bandera como "-r", o un error)
+        // Ya no le agregamos el '=' automáticamente, dejamos que el Validador decida si es una bandera válida o un error
         if (i < n && text[i] == ' ')
         {
-            tokens.push_back(nombre + "=");
+            tokens.push_back(nombre); // sin '=' — se decide en parsearParametros
             continue;
         }
 
         // Caso: llegó fin de texto sin '=' (ej. "-r" al final de la línea)
         if (i >= n)
         {
-            tokens.push_back(nombre + "=");
+            tokens.push_back(nombre);
             break;
         }
 
@@ -327,6 +328,7 @@ vector<string> scanner::split_tokens(string text)
         i++; // saltar el '='
         string valor = "";
 
+        // BLOQUE MODIFICADO: detección de comillas sin cerrar
         if (i < n && text[i] == '"')
         {
             // Valor entre comillas: puede contener espacios
@@ -336,7 +338,16 @@ vector<string> scanner::split_tokens(string text)
                 valor += text[i];
                 i++;
             }
-            if (i < n && text[i] == '"') i++; // saltar comilla de cierre
+            if (i < n && text[i] == '"')
+            {
+                i++; // saltar comilla de cierre
+            }
+            else
+            {
+                // No se encontró la comilla de cierre: parámetro mal formado
+                tokens.push_back("__ERROR_COMILLA__=" + nombre);
+                break; // el resto de la línea ya no es confiable, dejamos de leer
+            }
         }
         else
         {
