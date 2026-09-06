@@ -1,0 +1,5 @@
+make clean // para borrar
+make // para ejecutar el conpilador
+
+./ejecutable
+mkdisk -s=300 -path=/home/Documentos/Disco1.dsk

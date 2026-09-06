@@ -1,0 +1,73 @@
+.contenedor {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "Courier New", monospace;
+  color: #eee;
+}
+
+.entrada {
+  width: 100%;
+  padding: 10px;
+  background: #1e1e1e;
+  color: #0f0;
+  border: 1px solid #444;
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+button {
+  margin-top: 10px;
+  padding: 8px 20px;
+  background: #2c7;
+  color: #000;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.consola {
+  margin-top: 20px;
+  background: #000;
+  padding: 15px;
+  border-radius: 4px;
+  min-height: 150px;
+}
+
+.vacio {
+  color: #666;
+}
+
+.linea-resultado {
+  margin-bottom: 12px;
+  border-left: 3px solid #444;
+  padding-left: 10px;
+}
+
+.linea-resultado.valido {
+  border-left-color: #0f0;
+}
+
+.linea-resultado.invalido {
+  border-left-color: #f33;
+}
+
+.comando-texto {
+  color: #ccc;
+}
+
+.ok {
+  color: #0f0;
+}
+
+.errores {
+  margin: 4px 0 0 0;
+  padding-left: 18px;
+  color: #f66;
+}
