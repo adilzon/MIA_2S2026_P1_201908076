@@ -1,0 +1,5 @@
+mkdisk -size=10 -unit=M -path=C:\Users\Adilzon_h\Desktop\Disco1.mia
+mkdisk -size=3000 -unit=K -fit=BF -path=C:\Users\Adilzon_h\Desktop\Disco2.mia
+mkdisk -size=-5 -path=C:\Users\Adilzon_h\Desktop\DiscoMalo.mia
+fdisk -size=300 -unit=K -fit=WF -path=C:\Users\Adilzon_h\Desktop\Disco1.mia -name=Particion1
+exit

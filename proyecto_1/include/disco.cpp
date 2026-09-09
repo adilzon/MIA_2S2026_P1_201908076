@@ -32,7 +32,7 @@ void Disk::mkdisk(vector<string> tokens)
     {
         string tk = token.substr(0, token.find("="));
         token.erase(0,tk.length()+1);
-        if (scan.compare(tk, "f"))
+        if (scan.compare(tk, "fit"))
         {
             if (f.empty())
             {
@@ -47,7 +47,7 @@ void Disk::mkdisk(vector<string> tokens)
             }else{
                 scan.errores("MKDISK","parametro SIZE repetido en el comando"+tk);
             } 
-        }else if (scan.compare(tk, "u"))
+        }else if (scan.compare(tk, "unit"))
         {
             if (u.empty())
             {
@@ -71,7 +71,7 @@ void Disk::mkdisk(vector<string> tokens)
     }
     if (f.empty())
     {
-        f = "BF";//mejor ajuste de primer ajuste
+        f = "FF"; // primer ajuste por defecto, según enunciado
     }
     if (u.empty())
     {
@@ -109,6 +109,7 @@ void Disk::makeDisk(string s, string f, string u, string path){
         int size = stoi(s);
         if( size <= 0){
             scan.errores("MKDISK","size debe ser mayor a 0");
+            return;
         }
         if (scan.compare(u,"M")) 
         {
@@ -123,7 +124,19 @@ void Disk::makeDisk(string s, string f, string u, string path){
         disco.disk_fit = toupper(f[0]);
         disco.mbr_disk_signature = rand() % 9999 + 100;
 
-        FILE *validar = fopen(path.c_str(), "r");  //Busca el disco modo lectura
+        string path2 = path;
+        if (path.substr(0, 1) == "\"")
+        {
+            path = path.substr(1, path.length() - 2);
+            path2 = path;
+        }
+
+        if(!scan.compare(path.substr(path.find_last_of(".") + 1),"mia")){
+            scan.errores("MKDISK", "Extensión de archivo no válida, se esperaba .mia");
+            return;
+        }
+
+        FILE *validar = fopen(path.c_str(), "r");
 
         if (validar != NULL)
         {
@@ -131,20 +144,11 @@ void Disk::makeDisk(string s, string f, string u, string path){
             fclose(validar);
             return;
         }
+
         disco.mbr_Partition_1 = Structs::Partition();
         disco.mbr_Partition_2 = Structs::Partition();
         disco.mbr_Partition_3 = Structs::Partition();
         disco.mbr_Partition_4 = Structs::Partition();
-
-        string path2 = path;
-        if (path.substr(0, 1) == "\"")
-        {
-            path = path.substr(1, path.length() - 2);
-        }
-        if(!scan.compare(path.substr(path.find_last_of(".") + 1),"dsk")){
-            scan.errores("MKDISK", "Extensión de archivo no valida, EFITA");
-            return;
-        }
         
         try
         {
@@ -242,7 +246,7 @@ void Disk::rmdisk(vector<string> context){
             
             if (file != NULL)
             {
-                if(!scan.compare(path.substr(path.find_last_of(".") + 1),"dsk")){
+                if(!scan.compare(path.substr(path.find_last_of(".") + 1),"mia")){
                     scan.errores("RMDISK", "Extensión de archivo no valida");
                     return;
                 }
@@ -306,7 +310,7 @@ void Disk::fdisk(vector<string> context)
                     required.erase(itr);
                     size = current;
                 }
-            } else if (shared.compare(id, "u")) {
+            } else if (shared.compare(id, "unit")) {
                 u = current;
             } else if (shared.compare(id, "path")) {
                 if (count(required.begin(), required.end(), id)) {
@@ -316,7 +320,7 @@ void Disk::fdisk(vector<string> context)
                 }
             } else if (shared.compare(id, "type")) {
                 type = current;
-            } else if (shared.compare(id, "f")) {
+            } else if (shared.compare(id, "fit")) {
                 f = current;
             } else if (shared.compare(id, "name")) {
                 if (count(required.begin(), required.end(), id)) {

@@ -17,6 +17,8 @@ public:
         int part_start = -1; //incio de particion extendida o logica
         int part_size = 0; //tamaño de la particion
         char part_name[16]; //nombre maximo de 16 char
+        int part_correlative = -1;   // -1 hasta que se monte
+        char part_id[4] = {0};       // ID generado al montar, ej. "341A"
     } Partition;
 
     typedef struct _MBR

@@ -90,7 +90,7 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     spr.s_bm_inode_start = p.part_start + sizeof(Structs::Superblock);
     spr.s_bm_block_start = spr.s_bm_inode_start + n;
     spr.s_inode_start = spr.s_bm_block_start + (3 * n);
-    spr.s_block_start = spr.s_bm_inode_start + (n * sizeof(Structs::Inodes));
+    spr.s_block_start = spr.s_inode_start + (n * sizeof(Structs::Inodes));
 
     FILE *bfile = fopen(path.c_str(), "rb+");
     fseek(bfile, p.part_start, SEEK_SET);
@@ -120,11 +120,7 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     }
     fclose(bfile);
 
-    Structs::Superblock recuperado;
-    FILE *archivo = fopen(path.c_str(), "rb");
-    fseek(archivo, p.part_start, SEEK_SET);
-    fread(&recuperado, sizeof(Structs::Superblock), 1, archivo);
-    fclose(archivo);
+
     inode.i_uid = 1;
     inode.i_gid = 1;
     inode.i_size = 0;
@@ -147,7 +143,7 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     Structs::Inodes inodetmp;
     inodetmp.i_uid = 1;
     inodetmp.i_gid = 1;
-    inodetmp.i_size = sizeof(data.c_str()) + sizeof(Structs::Folderblock);
+    inodetmp.i_size = (int)data.length();
     inodetmp.i_atime = spr.s_umtime;
     inodetmp.i_ctime = spr.s_umtime;
     inodetmp.i_mtime = spr.s_umtime;
@@ -155,7 +151,7 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     inodetmp.i_perm = 664;
     inodetmp.i_block[0] = 1;
 
-    inode.i_size = inodetmp.i_size + sizeof(Structs::Folderblock) + sizeof(Structs::Inodes);
+    inode.i_size = sizeof(Structs::Folderblock); // tamaño del contenido de la carpeta raíz
 
     Structs::Fileblock fileb;
     strcpy(fileb.b_content, data.c_str());
@@ -177,6 +173,17 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     fseek(bfiles, spr.s_block_start, SEEK_SET);
     fwrite(&fb, sizeof(Structs::Folderblock), 1, bfiles);
     fwrite(&fileb, sizeof(Structs::Fileblock), 1, bfiles);
+
+    // Actualizar contadores del superbloque: se usaron 2 inodos (root, users.txt)
+    // y 2 bloques (folderblock de root, fileblock de users.txt)
+    spr.s_free_inodes_count -= 2;
+    spr.s_free_blocks_count -= 2;
+    spr.s_fist_ino = 2;
+    spr.s_first_blo = 2;
+
+    fseek(bfiles, p.part_start, SEEK_SET);
+    fwrite(&spr, sizeof(Structs::Superblock), 1, bfiles);
+
     fclose(bfiles);
 }
 
@@ -184,7 +191,7 @@ void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, stri
     spr.s_bm_inode_start = p.part_start + sizeof(Structs::Superblock) + (n * sizeof(Structs::Journaling));
     spr.s_bm_block_start = spr.s_bm_inode_start + n;
     spr.s_inode_start = spr.s_bm_block_start + (3 * n);
-    spr.s_block_start = spr.s_bm_inode_start + (n * sizeof(Structs::Inodes));
+    spr.s_block_start = spr.s_inode_start + (n * sizeof(Structs::Inodes));
 
     FILE *bfile = fopen(path.c_str(), "rb+");
     fseek(bfile, p.part_start, SEEK_SET);
@@ -219,11 +226,7 @@ void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, stri
     }
     fclose(bfile);
 
-    Structs::Superblock recuperado;
-    FILE *archivo = fopen(path.c_str(), "rb");
-    fseek(archivo, p.part_start, SEEK_SET);
-    fread(&recuperado, sizeof(Structs::Superblock), 1, archivo);
-    fclose(archivo);
+
 
     inode.i_uid = 1;
     inode.i_gid = 1;
@@ -253,7 +256,7 @@ void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, stri
     Structs::Inodes inodetmp;
     inodetmp.i_uid = 1;
     inodetmp.i_gid = 1;
-    inodetmp.i_size = sizeof(data.c_str()) + sizeof(Structs::Folderblock);
+    inodetmp.i_size = (int)data.length();
     inodetmp.i_atime = spr.s_umtime;
     inodetmp.i_ctime = spr.s_umtime;
     inodetmp.i_mtime = spr.s_umtime;
@@ -261,7 +264,7 @@ void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, stri
     inodetmp.i_perm = 664;
     inodetmp.i_block[0] = 1;
 
-    inode.i_size = inodetmp.i_size + sizeof(Structs::Folderblock) + sizeof(Structs::Inodes);
+    inode.i_size = sizeof(Structs::Folderblock); // tamaño del contenido de la carpeta raíz
 
     Structs::Journaling joutmp;
     strcpy(joutmp.content, data.c_str());
@@ -296,5 +299,16 @@ void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, stri
     fseek(bfiles, spr.s_block_start, SEEK_SET);
     fwrite(&fb, sizeof(Structs::Folderblock), 1, bfiles);
     fwrite(&fileb, sizeof(Structs::Fileblock), 1, bfiles);
+
+    // Actualizar contadores del superbloque: se usaron 2 inodos (root, users.txt)
+    // y 2 bloques (folderblock de root, fileblock de users.txt)
+    spr.s_free_inodes_count -= 2;
+    spr.s_free_blocks_count -= 2;
+    spr.s_fist_ino = 2;
+    spr.s_first_blo = 2;
+
+    fseek(bfiles, p.part_start, SEEK_SET);
+    fwrite(&spr, sizeof(Structs::Superblock), 1, bfiles);
+
     fclose(bfiles);
 }
