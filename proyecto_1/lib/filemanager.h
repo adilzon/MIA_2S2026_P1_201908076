@@ -14,22 +14,92 @@ class FileManager {
 public:
     FileManager();
 
-    void mkdir(vector<string> context, Structs::Partition partition, string p);
+    void mkdir(vector<string> context,
+               Structs::Partition partition,
+               string pth,
+               int uid,
+               int gid,
+               string username);
 
+    void mkfile(vector<string> context,
+                Structs::Partition partition,
+                string pth,
+                int uid,
+                int gid,
+                string username);
+
+    void cat(vector<string> context,
+             Structs::Partition partition,
+             string pth,
+             int uid,
+             int gid,
+             string username);
 
     vector<string> getpath(string s);
 
     int getfree(Structs::Superblock spr, string pth, string t);
 
-    void updatebm(Structs::Superblock spr, string pth, string t);
-
-    void newfileblock(Structs::Superblock super);
 private:
-    void mkdir(vector<string> path, bool p, Structs::Partition partition, string pth);
+    static const int BLOCK_SIZE = 64;
 
-
-    Mount mount;
     Shared shared;
+
+    Structs::Inodes readInode(FILE *file,
+                              Structs::Superblock spr,
+                              int inodeNum);
+
+    void writeInode(FILE *file,
+                    Structs::Superblock spr,
+                    int inodeNum,
+                    Structs::Inodes inode);
+
+    void writeSuperblock(FILE *file,
+                         Structs::Partition partition,
+                         Structs::Superblock spr);
+
+    int allocateInode(FILE *file,
+                      Structs::Superblock &spr);
+
+    int allocateBlock(FILE *file,
+                      Structs::Superblock &spr);
+
+    vector<int> getFolderBlocks(FILE *file,
+                                Structs::Superblock spr,
+                                Structs::Inodes inode);
+
+    int locateChild(FILE *file,
+                    Structs::Superblock spr,
+                    int parentInodeNum,
+                    string name);
+
+    void addEntryToFolder(FILE *file,
+                          Structs::Superblock &spr,
+                          int parentInodeNum,
+                          string name,
+                          int childInode);
+
+    int resolveParentPath(FILE *file,
+                          Structs::Superblock &spr,
+                          vector<string> comps,
+                          bool createMissing,
+                          int uid,
+                          int gid,
+                          string username);
+
+    bool hasPermission(Structs::Inodes inode,
+                       int uid,
+                       int gid,
+                       string username,
+                       char action);
+
+    void writeFileContent(FILE *file,
+                          Structs::Superblock &spr,
+                          int inodeNum,
+                          string content);
+
+    string readFileContent(FILE *file,
+                           Structs::Superblock spr,
+                           Structs::Inodes inode);
 };
 
-#endif // END OF DECLARATION
+#endif

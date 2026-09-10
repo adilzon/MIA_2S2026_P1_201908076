@@ -186,10 +186,58 @@ void scanner::functions(string token, vector<string> tks)
             shared.handler("MKDIR", " debe de iniciar sesion primero");
             return;
         }
-        string p;
+
         std::cout << "FUNCION MKDIR" << std::endl;
+
+        string p;
         Structs::Partition partition = mount.getmount(user.logged.id, &p);
-        filemanager.mkdir(tks, partition, p);
+
+        filemanager.mkdir(
+            tks,
+            partition,
+            p,
+            user.logged.uid,
+            user.logged.gid,
+            user.logged.user
+        );
+    }else if(compare(token, "MKFILE")){
+        if(!logued){
+            shared.handler("MKFILE", " debe de iniciar sesion primero");
+            return;
+        }
+
+        std::cout << "FUNCION MKFILE" << std::endl;
+
+        string p;
+        Structs::Partition partition = mount.getmount(user.logged.id, &p);
+
+        filemanager.mkfile(
+            tks,
+            partition,
+            p,
+            user.logged.uid,
+            user.logged.gid,
+            user.logged.user
+        );
+    }else if(compare(token, "CAT")){
+        if(!logued){
+            shared.handler("CAT", " debe de iniciar sesion primero");
+            return;
+        }
+
+        std::cout << "FUNCION CAT" << std::endl;
+
+        string p;
+        Structs::Partition partition = mount.getmount(user.logged.id, &p);
+
+        filemanager.cat(
+            tks,
+            partition,
+            p,
+            user.logged.uid,
+            user.logged.gid,
+            user.logged.user
+        );
     }else if(compare(token, "REP")){
         std::cout << "FUNCION REPORTES" << std::endl;
         report.generar(tks, mount);
@@ -285,6 +333,9 @@ vector<string> scanner::split_tokens(string text)
                 }
                 else if (c == ' ')
                 {
+                    estado = 0;
+                    tokens.push_back(token);
+                    token = "";
                     continue;
                 }
             }

@@ -482,7 +482,7 @@ void Report::inode(string p, string id) {
                                                           "</tr>\n"
                                                           "<tr>\n"
                                                           "<td>i_perm</td>\n"
-                                                          "<td>" + to_string(inode.i_perm) + "</td>\n"
+                                                          "<td>" + string(inode.i_perm, 3) + "</td>\n"
                                                                                              "</tr>\n</table>>];\n";
             if (i != 0) {
                 content += "inode" + to_string(i - 1) + "-> inode" + to_string(i) + "\n";
@@ -937,7 +937,7 @@ void Report::tree(string p, string id) {
                                                           "</tr>\n"
                                                           "<tr>\n"
                                                           "<td>i_perm</td>\n"
-                                                          "<td>" + to_string(inode.i_perm) + "</td>\n"
+                                                          "<td>" + string(inode.i_perm, 3) + "</td>\n"
                                                                                              "</tr>\n</table>>];\n";
             if (inode.i_type == 0) {
                 for (int j = 0; j < 15; j++) {

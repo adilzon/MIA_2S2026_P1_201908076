@@ -51,7 +51,7 @@ public:
         time_t i_mtime;
         int i_block[15] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
         char i_type = -1;
-        int i_perm = -1;
+        char i_perm[3] = {'0', '0', '0'};
     } Inodes;
 
     typedef struct _Superblock {

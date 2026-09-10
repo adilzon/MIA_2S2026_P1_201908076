@@ -128,7 +128,9 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     inode.i_ctime = spr.s_umtime;
     inode.i_mtime = spr.s_umtime;
     inode.i_type = 0;
-    inode.i_perm = 664;
+    inode.i_perm[0] = '6';
+    inode.i_perm[1] = '6';
+    inode.i_perm[2] = '4';
     inode.i_block[0] = 0;
 
     Structs::Folderblock fb;
@@ -148,7 +150,9 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     inodetmp.i_ctime = spr.s_umtime;
     inodetmp.i_mtime = spr.s_umtime;
     inodetmp.i_type = 1;
-    inodetmp.i_perm = 664;
+    inodetmp.i_perm[0] = '6';
+    inodetmp.i_perm[1] = '6';
+    inodetmp.i_perm[2] = '4';
     inodetmp.i_block[0] = 1;
 
     inode.i_size = sizeof(Structs::Folderblock); // tamaño del contenido de la carpeta raíz
@@ -235,7 +239,9 @@ void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, stri
     inode.i_ctime = spr.s_umtime;
     inode.i_mtime = spr.s_umtime;
     inode.i_type = 0;
-    inode.i_perm = 664;
+    inode.i_perm[0] = '6';
+    inode.i_perm[1] = '6';
+    inode.i_perm[2] = '4';
     inode.i_block[0] = 0;
 
     strcpy(journaling.content, "carpeta base");
@@ -261,7 +267,9 @@ void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, stri
     inodetmp.i_ctime = spr.s_umtime;
     inodetmp.i_mtime = spr.s_umtime;
     inodetmp.i_type = 1;
-    inodetmp.i_perm = 664;
+    inodetmp.i_perm[0] = '6';
+    inodetmp.i_perm[1] = '6';
+    inodetmp.i_perm[2] = '4';
     inodetmp.i_block[0] = 1;
 
     inode.i_size = sizeof(Structs::Folderblock); // tamaño del contenido de la carpeta raíz

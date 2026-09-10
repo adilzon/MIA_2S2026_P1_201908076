@@ -178,21 +178,51 @@ bool Users::login(string u, string p, string id) {
         fclose(rfile);
 
         vector<string> vctr = getElements(txt, '\n');
+        int foundUid = -1;
+        int foundGid = -1;
+        string foundGroupName = "";
+        bool userFound = false;
+
         for (string line : vctr) {
             if (line.empty()) continue;
             if (line[0] != '0' && (line[2] == 'U' || line[2] == 'u')) {
                 vector<string> in = getElements(line, ',');
                 if (in.size() >= 5 && shared.compare(in[3], u) && shared.compare(in[4], p)) {
-                    shared.response("LOGIN", "logueado correctamente");
-                    logged.id = id;
-                    logged.user = u;
-                    logged.password = p;
-                    logged.uid = stoi(in[0]);
-                    return true;
+                    foundUid = stoi(in[0]);
+                    foundGroupName = in[2];
+                    userFound = true;
+                    break;
                 }
             }
         }
-        throw runtime_error("no hay credenciales similares");
+
+        if (!userFound) {
+            throw runtime_error("no hay credenciales similares");
+        }
+
+        for (string line : vctr) {
+            if (line.empty()) continue;
+            if (line[0] != '0' && (line[2] == 'G' || line[2] == 'g')) {
+                vector<string> in = getElements(line, ',');
+                if (in.size() >= 3 && shared.compare(in[2], foundGroupName)) {
+                    foundGid = stoi(in[0]);
+                    break;
+                }
+            }
+        }
+
+        if (foundGid == -1) {
+            throw runtime_error("el grupo del usuario no existe o esta desactivado");
+        }
+
+        shared.response("LOGIN", "logueado correctamente");
+        logged.id = id;
+        logged.user = u;
+        logged.password = p;
+        logged.uid = foundUid;
+        logged.gid = foundGid;
+        logged.grp = foundGroupName;
+        return true;
     }
     catch (exception &e) {
         shared.handler("LOGIN", e.what());

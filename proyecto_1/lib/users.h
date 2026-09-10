@@ -18,6 +18,8 @@ public:
         string password;
         string id;
         int uid;
+        int gid = -1;
+        string grp;
     } User;
 
     bool login(vector<string> context, Mount m);
