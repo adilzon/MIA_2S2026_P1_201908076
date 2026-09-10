@@ -1,0 +1,3 @@
+mkdisk -size=3000 -unit=K -fit=BF -path=C:\Users\Adilzon_h\Desktop\Disco2.mia
+
+exit

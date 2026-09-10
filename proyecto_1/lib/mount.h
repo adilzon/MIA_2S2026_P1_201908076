@@ -2,6 +2,7 @@
 #define MOUNT_H
 
 #include <string>
+#include <vector>
 #include <bits/stdc++.h>
 #include "../lib/shared.h"
 #include "../lib/structs.h"
@@ -12,23 +13,19 @@ using namespace std;
 class Mount {
     public:
     Mount();
-  //  es nuestra partcion montada, la cual tiene un nombre, una letra y un status
-    typedef struct _MP
-    {
-        char letter;
-        char status = '0';
-        char name[20];
-    }MountedPartition;
 
-  //  es nuestro disco montado, el cual tiene una ruta, un status y una lista de particiones montadas
     typedef struct _MD
     {
-        char path[150];
+        char path[150] = {0};
         char status = '0';
-        MountedPartition mpartitions[26];
-    }MountedDisc;//disco a montar
+        char letter = 0;
+        int count = 0;
+        Structs::Partition mpartitions[10];
+    } MountedDisc;
 
-    MountedDisc mounted[99];
+    MountedDisc mounted[26];
+
+    string carnet = "76";
 
     void mount(vector<string> context);
 
@@ -38,14 +35,12 @@ class Mount {
 
     void unmount(string id);
 
-    void listmount();//esto nos sirve para listar las particiones montadas
+    void listmount();
 
     Structs::Partition getmount(string id, string *p);
 
     private:
     Disk dsk;
     Shared shared;
-    vector<char> alfabeto = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
-                             's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 };
 #endif

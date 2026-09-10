@@ -1,0 +1,3 @@
+fdisk -size=300 -unit=K -fit=WF -path=C:/Users/Adilzon_h/Desktop/Disco1.mia -name=Particion1
+
+exit

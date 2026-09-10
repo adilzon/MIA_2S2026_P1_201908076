@@ -114,6 +114,9 @@ void scanner::functions(string token, vector<string> tks)
     }else if(compare(token, "MOUNT")){
         std::cout << "FUNCION MOUNT" << std::endl;
         mount.mount(tks);
+    }else if(compare(token, "MOUNTED")){
+        std::cout << "FUNCION MOUNTED" << std::endl;
+        mount.listmount();
     }else if(compare(token, "UNMOUNT")){
         std::cout << "FUNCION *UNMOUNT" << std::endl;
         mount.unmount(tks);
