@@ -173,6 +173,14 @@ void scanner::functions(string token, vector<string> tks)
         std::cout << "FUNCION RMUSR" << std::endl;
         user.usr(tks,"RM");
 
+    }else if(compare(token, "CHGRP")){
+        if(!logued){
+            shared.handler("CHGRP", " debe de iniciar sesion primero");
+            return;
+        }
+        std::cout << "FUNCION CHGRP" << std::endl;
+        user.chgrp(tks);
+
     }else if(compare(token, "MKDIR")){
         if(!logued){
             shared.handler("MKDIR", " debe de iniciar sesion primero");
@@ -393,6 +401,10 @@ void scanner::excec(string path)
     }
     while (getline(input_file, line))
     {
+        if (!line.empty() && line.back() == '\r')
+        {
+            line.pop_back();
+        }
         lines.push_back(line);
     }
     for (const auto &i : lines)

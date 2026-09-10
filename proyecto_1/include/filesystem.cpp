@@ -136,7 +136,7 @@ void FileSystem::ext2(Structs::Superblock spr, Structs::Partition p, int n, stri
     fb.b_content[0].b_inodo = 0;
     strcpy(fb.b_content[1].b_name, "..");
     fb.b_content[1].b_inodo = 0;
-    strcpy(fb.b_content[2].b_name, "user.txt");
+    strcpy(fb.b_content[2].b_name, "users.txt");
     fb.b_content[2].b_inodo = 1;
 
     string data = "1,G,root\n1,U,root,root,123\n";
@@ -249,7 +249,7 @@ void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, stri
     fb.b_content[0].b_inodo = 0;
     strcpy(fb.b_content[1].b_name, "..");
     fb.b_content[1].b_inodo = 0;
-    strcpy(fb.b_content[2].b_name, "user.txt");
+    strcpy(fb.b_content[2].b_name, "users.txt");
     fb.b_content[2].b_inodo = 1;
 
     string data = "1,G,root\n1,U,root,root,123\n";
@@ -268,7 +268,7 @@ void FileSystem::ext3(Structs::Superblock spr, Structs::Partition p, int n, stri
 
     Structs::Journaling joutmp;
     strcpy(joutmp.content, data.c_str());
-    strcpy(joutmp.path, "/user.txt");
+    strcpy(joutmp.path, "/users.txt");
     joutmp.type = 1;
     joutmp.size = sizeof(data) + sizeof(Structs::Folderblock);
     strcpy(joutmp.operation, "mkfl");

@@ -38,6 +38,18 @@ public:
 
     void rmusr(string usr);
 
+    void chgrp(vector<string> context);
+
+    void chgrp(string usr, string grp);
+
+    int locateUsersTxtInode(FILE *file, Structs::Superblock spr);
+
+    string readUsersContent(FILE *file, Structs::Superblock spr, Structs::Inodes inode);
+
+    void writeUsersContent(FILE *file, Structs::Superblock &spr, Structs::Partition partition, int inodeNum, string content);
+
+    int allocFreeBlock(FILE *file, Structs::Superblock &spr);
+
     vector<string> getElements(string txt, char c);
 
     User logged;
