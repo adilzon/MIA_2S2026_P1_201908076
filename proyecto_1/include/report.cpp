@@ -9,64 +9,174 @@ using namespace std;
 
 Report::Report(){}
 
+string Report::extOf(string p) {
+    size_t pos = p.find_last_of('.');
+
+    if (pos == string::npos)
+        return "jpg";
+
+    return p.substr(pos + 1);
+}
+
 void Report::generar(vector<string> context, Mount m)
 {
     mount = m;
-    vector<string> required = {"id","path","name"};
+
+    vector<string> required = {
+        "id",
+        "path",
+        "name"
+    };
+
     string name;
     string path;
     string id;
-    for(string current:context){
-        string id_ = shared.lower(current.substr(0,current.find('=')));
-        current.erase(0, id_.length()+1);
-        if(current.substr(0,1) =="\"")
-        {
-            current = current.substr(1,current.length()-2);
+    string pathFileLs;
+
+    for (string current : context) {
+
+        string id_ =
+            shared.lower(
+                current.substr(
+                    0,
+                    current.find('=')
+                )
+            );
+
+        current.erase(
+            0,
+            id_.length() + 1
+        );
+
+        if (
+            current.substr(0,1) == "\""
+        ) {
+            current =
+                current.substr(
+                    1,
+                    current.length() - 2
+                );
         }
-        if(shared.compare(id_,"name")){
-            if(count(required.begin(), required.end(), id_)){
-                auto itr = find(required.begin(), required.end(), id_);
+
+        if (shared.compare(id_, "name")) {
+
+            if (
+                count(
+                    required.begin(),
+                    required.end(),
+                    id_
+                )
+            ) {
+                auto itr =
+                    find(
+                        required.begin(),
+                        required.end(),
+                        id_
+                    );
+
                 required.erase(itr);
                 name = current;
             }
-        }else if(shared.compare(id_,"id")){
-            if(count(required.begin(), required.end(), id_)){
-                auto itr = find(required.begin(), required.end(), id_);
+
+        } else if (
+            shared.compare(id_, "id")
+        ) {
+
+            if (
+                count(
+                    required.begin(),
+                    required.end(),
+                    id_
+                )
+            ) {
+                auto itr =
+                    find(
+                        required.begin(),
+                        required.end(),
+                        id_
+                    );
+
                 required.erase(itr);
                 id = current;
             }
-        }else if(shared.compare(id_,"path")){
-            if(count(required.begin(), required.end(), id_)){
-                auto itr = find(required.begin(), required.end(), id_);
+
+        } else if (
+            shared.compare(id_, "path")
+        ) {
+
+            if (
+                count(
+                    required.begin(),
+                    required.end(),
+                    id_
+                )
+            ) {
+                auto itr =
+                    find(
+                        required.begin(),
+                        required.end(),
+                        id_
+                    );
+
                 required.erase(itr);
                 path = current;
             }
+
+        } else if (
+            shared.compare(id_, "path_file_ls")
+        ) {
+
+            pathFileLs = current;
         }
     }
-    if(required.size()!=0){
-        shared.handler("REPORT", " faltan parametros para realizar el reporte");
+
+    if (required.size() != 0) {
+
+        shared.handler(
+            "REPORT",
+            " faltan parametros para realizar el reporte"
+        );
+
         return;
     }
+
     if (shared.compare(name, "MBR")) {
         mbr(path, id);
+
     } else if (shared.compare(name, "INODE")) {
         inode(path, id);
+
     } else if (shared.compare(name, "BLOCK")) {
         block(path, id);
+
     } else if (shared.compare(name, "BM_INODE")) {
         bminode(path, id);
+
     } else if (shared.compare(name, "BM_BLOCK")) {
         bmblock(path, id);
+
     } else if (shared.compare(name, "SB")) {
         sb(path, id);
+
     } else if (shared.compare(name, "TREE")) {
         tree(path, id);
+
     } else if (shared.compare(name, "DISK")) {
         dks(path, id);
-    } else if (shared.compare(name, "Journaling")) {
-        journaling(path, id);
+
+    } else if (shared.compare(name, "FILE")) {
+        file(path, id, pathFileLs);
+
+    } else if (shared.compare(name, "LS")) {
+        ls(path, id, pathFileLs);
+
     } else {
-        shared.handler("REPORT", "no es un reporte válido");
+
+        shared.handler(
+            "REPORT",
+            "no es un reporte válido"
+        );
+
         return;
     }
 }
@@ -225,7 +335,7 @@ void Report::mbr(string p, string id) {
         ofstream outfile(pd);
         outfile << content.c_str() << endl;
         outfile.close();
-        string function = "dot -Tjpg " + pd + " -o " + p;
+        string function = "dot -T" + extOf(p) + " " + pd + " -o " + p;
         system(function.c_str());
         //function = "rm \"" + pd + "\"";
         //system(function.c_str());
@@ -235,23 +345,26 @@ void Report::mbr(string p, string id) {
     }
 }
 
-void Report::dks(string p, string id){
+void Report::dks(string p, string id) {
     try {
         string path;
         Structs::Partition partition = mount.getmount(id, &path);
 
         FILE *file = fopen(path.c_str(), "rb+");
+
         if (file == NULL) {
             throw runtime_error("disco no existente");
         }
 
-        Structs::MBR disk;
+        Structs::MBR mbrData;
+
         rewind(file);
-        fread(&disk, sizeof(Structs::MBR), 1, file);
+        fread(&mbrData, sizeof(Structs::MBR), 1, file);
+
         fclose(file);
 
-        string pd = p.substr(0, p.find('.'));
-        pd += ".dot";
+        string pd = p.substr(0, p.find_last_of('.')) + ".dot";
+
         FILE *doc = fopen(pd.c_str(), "r");
         if (doc == NULL) {
             string cmm = "mkdir -p \"" + pd + "\"";
@@ -262,133 +375,193 @@ void Report::dks(string p, string id){
             fclose(doc);
         }
 
-        Structs::Partition partitions[4];
-        partitions[0] = disk.mbr_Partition_1;
-        partitions[1] = disk.mbr_Partition_2;
-        partitions[2] = disk.mbr_Partition_3;
-        partitions[3] = disk.mbr_Partition_4;
-        Structs::Partition extended;
-        bool ext = false;
-        for (int i = 0; i < 4; ++i) {
-            if (partitions[i].part_status == '1') {
-                if (partitions[i].part_type == 'E') {
-                    ext = true;
-                    extended = partitions[i];
-                }
+        Structs::Partition all[4] = {
+            mbrData.mbr_Partition_1,
+            mbrData.mbr_Partition_2,
+            mbrData.mbr_Partition_3,
+            mbrData.mbr_Partition_4
+        };
+
+        vector<Structs::Partition> used;
+
+        for (int i = 0; i < 4; i++) {
+            if (all[i].part_status == '1') {
+                used.push_back(all[i]);
             }
         }
 
-        string content;
-        content = "digraph G{\n"
-                  "rankdir=TB;\n"
-                  "forcelabels= true;\n"
-                  "graph [ dpi = \"600\" ]; \n"
-                  "node [shape = plaintext];\n";
-        content += "nodo1 [label = <<table>\n";
-        content += "<tr>\n";
+        sort(
+            used.begin(),
+            used.end(),
+            [](const Structs::Partition &a,
+               const Structs::Partition &b) {
+                return a.part_start < b.part_start;
+            }
+        );
 
-        int positions[5] = {0, 0, 0, 0, 0};
-        int positionsii[5] = {0, 0, 0, 0, 0};
-        positions[0] = disk.mbr_Partition_1.part_start - (1 + sizeof(Structs::MBR));
-        positions[1] =
-                disk.mbr_Partition_2.part_start - (disk.mbr_Partition_1.part_start + disk.mbr_Partition_1.part_size);
-        positions[2] =
-                disk.mbr_Partition_3.part_start - (disk.mbr_Partition_2.part_start + disk.mbr_Partition_2.part_size);
-        positions[3] =
-                disk.mbr_Partition_4.part_start - (disk.mbr_Partition_3.part_start + disk.mbr_Partition_3.part_size);
-        positions[4] = disk.mbr_tamano + 1 - (disk.mbr_Partition_4.part_start + disk.mbr_Partition_4.part_size);
-        copy(positions, positionsii, positionsii);
-        for (size_t j = 0; j < 5; j++) {
-            bool negative = false;
-            for (size_t i = 0; i < 4; i++) {
-                if (positions[i] < 0) {
-                    negative = true;
-                }
-                if (positions[i] <= 0 && positionsii[i] <= 0 && negative && positions[i + 1] > 0) {
-                    positions[i] = positions[i] + positions[i + 1];
-                    positions[i + 1] = 0;
-                }
-            }
-            negative = false;
-        }
-        int logic = 0;
-        string tmplogic;
-        if (ext) {
-            tmplogic = "<tr>\n";
-            Structs::EBR aux;
-            FILE *ext = fopen(path.c_str(), "r+b");
-            fseek(ext, extended.part_start, SEEK_SET);
-            fread(&aux, sizeof(Structs::EBR), 1, ext);
-            fclose(ext);
-            while (aux.part_next != -1) {
-                float res = (float) aux.part_size / (float) disk.mbr_tamano;
-                res = round(res * 10000.00F) / 100.00F;
-                tmplogic += "<td>EBR</td>";
-                tmplogic += "<td>Logica\n" + to_string(res) + "% del disco</td>\n";
-                float resta = (float) aux.part_next - ((float) aux.part_start + (float) aux.part_size);
-                resta = resta / disk.mbr_tamano;
-                resta = resta * 10000.00F;
-                resta = round(resta) / 100.00F;
-                if (resta != 0) {
-                    tmplogic += "<td>Logica\n" + to_string(resta) + "% libre del disco</td>\n";
-                    logic++;
-                }
-                logic += 2;
-                FILE *ext2 = fopen(path.c_str(), "r+b");
-                fseek(ext2, aux.part_next, SEEK_SET);
-                fread(&aux, sizeof(Structs::EBR), 1, ext2);
-                fclose(ext2);
-            }
-            float res = (float) aux.part_size / (float) disk.mbr_tamano;
-            res = round(res * 10000.00F) / 100.00F;
-            tmplogic += "<td>EBR</td>";
-            tmplogic += "<td>Logica\n" + to_string(res) + "% del disco</td>\n";
-            float resta = (float) extended.part_size -
-                          ((float) aux.part_start + (float) aux.part_size - (float) extended.part_start);
-            resta = resta / disk.mbr_tamano;
-            resta = resta * 10000.00F;
-            resta = round(resta) / 100.00F;
-            if (resta != 0) {
-                tmplogic += "<td>Libre\n" + to_string(resta) + "% del disco</td>\n";
-                logic++;
-            }
-            tmplogic += "</tr>\n\n";
-            logic += 2;
-        }
+        string content =
+            "digraph G{\n"
+            "rankdir=TB;\n"
+            "forcelabels=true;\n"
+            "graph [ dpi = \"600\" ];\n"
+            "node [shape=plaintext];\n";
 
-        for (int i = 0; i < 4; ++i) {
-            if (partitions[i].part_type == 'E') {
-                content += "<td COLSPAN='" + to_string(logic) + "'> Extendida </td>\n";
+        content += "nodo1 [label = <<table>\n<tr>\n";
+
+        string logicRow = "<tr>\n";
+
+        int logicCells = 0;
+
+        int cursor = (int)sizeof(Structs::MBR);
+
+        for (auto &pt : used) {
+
+            int gap = pt.part_start - cursor;
+
+            if (gap > 0) {
+                float pct =
+                    round(
+                        ((float)gap / mbrData.mbr_tamano) * 10000.0f
+                    ) / 100.0f;
+
+                content +=
+                    "<td ROWSPAN='2'>Libre\n" +
+                    to_string(pct) +
+                    "% del disco</td>\n";
+            }
+
+            if (pt.part_type == 'E' || pt.part_type == 'e') {
+
+                vector<Structs::EBR> ebrs =
+                    disk.getlogics(pt, path);
+
+                int innerCursor = pt.part_start;
+
+                for (auto &ebr : ebrs) {
+
+                    int innerGap =
+                        ebr.part_start - innerCursor;
+
+                    if (innerGap > 0) {
+
+                        float pctg =
+                            round(
+                                ((float)innerGap /
+                                 mbrData.mbr_tamano) * 10000.0f
+                            ) / 100.0f;
+
+                        logicRow +=
+                            "<td>Libre\n" +
+                            to_string(pctg) +
+                            "% del disco</td>\n";
+
+                        logicCells++;
+                    }
+
+                    logicRow += "<td>EBR</td>\n";
+
+                    float pctL =
+                        round(
+                            ((float)ebr.part_size /
+                             mbrData.mbr_tamano) * 10000.0f
+                        ) / 100.0f;
+
+                    logicRow +=
+                        "<td>Logica\n" +
+                        to_string(pctL) +
+                        "% del disco</td>\n";
+
+                    logicCells += 2;
+
+                    innerCursor =
+                        ebr.part_start +
+                        (int)sizeof(Structs::EBR) +
+                        ebr.part_size;
+                }
+
+                int trailingGap =
+                    (pt.part_start + pt.part_size) -
+                    innerCursor;
+
+                if (trailingGap > 0) {
+
+                    float pctg =
+                        round(
+                            ((float)trailingGap /
+                             mbrData.mbr_tamano) * 10000.0f
+                        ) / 100.0f;
+
+                    logicRow +=
+                        "<td>Libre\n" +
+                        to_string(pctg) +
+                        "% del disco</td>\n";
+
+                    logicCells++;
+                }
+
+                content +=
+                    "<td COLSPAN='" +
+                    to_string(max(1, logicCells)) +
+                    "'>Extendida</td>\n";
+
             } else {
-                if (positions[i] != 0) {
-                    float res = (float) positions[i] / (float) disk.mbr_tamano;
-                    res = round(res * 100.0F * 100.0F) / 100.0F;
-                    content += "<td ROWSPAN='2'> Libre \n" + to_string(res) + "% del disco</td>";
-                } else {
-                    float res = ((float) partitions[i].part_size) / (float) disk.mbr_tamano;
-                    res = round(res * 10000.00F) / 100.00F;
-                    content += "<td ROWSPAN='2'> Primaria \n" + to_string(res) + "% del disco</td>";
-                }
+
+                float pct =
+                    round(
+                        ((float)pt.part_size /
+                         mbrData.mbr_tamano) * 10000.0f
+                    ) / 100.0f;
+
+                content +=
+                    "<td ROWSPAN='2'>Primaria\n" +
+                    to_string(pct) +
+                    "% del disco</td>\n";
             }
 
-        }
-        if (positions[4] != 0) {
-            float res = (float) positions[4] / (float) disk.mbr_tamano;
-            res = round(res * 100.0F * 100.0F) / 100.0F;
-            content += "<td ROWSPAN='2'> Libre \n" + to_string(res) + "% del disco</td>";
+            cursor =
+                pt.part_start +
+                pt.part_size;
         }
 
-        content += "</tr>\n\n";
-        content += tmplogic;
-        content += "</table>>];\n}\n";
+        int finalGap =
+            mbrData.mbr_tamano - cursor;
+
+        if (finalGap > 0) {
+
+            float pct =
+                round(
+                    ((float)finalGap /
+                     mbrData.mbr_tamano) * 10000.0f
+                ) / 100.0f;
+
+            content +=
+                "<td ROWSPAN='2'>Libre\n" +
+                to_string(pct) +
+                "% del disco</td>\n";
+        }
+
+        if (logicCells > 0) {
+            logicRow += "</tr>\n";
+            content += "</tr>\n" + logicRow + "</table>>];\n}\n";
+        } else {
+            content += "</tr>\n</table>>];\n}\n";
+        }
+
         ofstream outfile(pd);
         outfile << content.c_str() << endl;
         outfile.close();
-        string function = "dot -Tjpg " + pd + " -o " + p;
+
+        string function =
+            "dot -T" + extOf(p) +
+            " " + pd + " -o " + p;
+
         system(function.c_str());
-        //function = "rm \"" + pd + "\"";
-        //system(function.c_str());
-        shared.response("REPORT", "generado correctamente");
+
+        shared.response(
+            "REPORT",
+            "generado correctamente"
+        );
+
     } catch (exception &e) {
         shared.handler("REPORT", e.what());
     }
@@ -495,7 +668,7 @@ void Report::inode(string p, string id) {
         ofstream outfile(pd);
         outfile << content.c_str() << endl;
         outfile.close();
-        string function = "dot -Tjpg " + pd + " -o " + p;
+        string function = "dot -T" + extOf(p) + " " + pd + " -o " + p;
         system(function.c_str());
         function = "rm \"" + pd + "\"";
         system(function.c_str());
@@ -600,7 +773,7 @@ void Report::block(string p, string id) {
         ofstream outfile(pd);
         outfile << content.c_str() << endl;
         outfile.close();
-        string function = "dot -Tjpg " + pd + " -o " + p;
+        string function = "dot -T" + extOf(p) + " " + pd + " -o " + p;
         system(function.c_str());
         function = "rm \"" + pd + "\"";
         system(function.c_str());
@@ -839,7 +1012,7 @@ void Report::sb(string p, string id) {
         ofstream outfile(pd);
         outfile << content.c_str() << endl;
         outfile.close();
-        string function = "dot -Tjpg " + pd + " -o " + p;
+        string function = "dot -T" + extOf(p) + " " + pd + " -o " + p;
         system(function.c_str());
         function = "rm \"" + pd + "\"";
         system(function.c_str());
@@ -1013,7 +1186,7 @@ void Report::tree(string p, string id) {
         ofstream outfile(pd);
         outfile << content.c_str() << endl;
         outfile.close();
-        string function = "dot -Tjpg " + pd + " -o " + p;
+        string function = "dot -T" + extOf(p) + " " + pd + " -o " + p;
         system(function.c_str());
         function = "rm \"" + pd + "\"";
         system(function.c_str());
@@ -1115,11 +1288,422 @@ void Report::journaling(string p, string id) {
         ofstream outfile(pd);
         outfile << content.c_str() << endl;
         outfile.close();
-        string function = "dot -Tjpg " + pd + " -o " + p;
+        string function = "dot -T" + extOf(p) + " " + pd + " -o " + p;
         system(function.c_str());
         function = "rm \"" + pd + "\"";
         system(function.c_str());
         shared.response("REPORT", "generado correctamente");
+    } catch (exception &e) {
+        shared.handler("REPORT", e.what());
+    }
+}
+
+string Report::permString(char type, char perm[3]) {
+    string result;
+
+    result += (type == 0) ? 'd' : '-';
+
+    for (int i = 0; i < 3; i++) {
+        int val = perm[i] - '0';
+
+        result += (val & 4) ? 'r' : '-';
+        result += (val & 2) ? 'w' : '-';
+        result += (val & 1) ? 'x' : '-';
+    }
+
+    return result;
+}
+
+void Report::resolveOwnerGroup(
+    FILE *file,
+    Structs::Superblock spr,
+    string diskPath,
+    int uid,
+    int gid,
+    string &ownerName,
+    string &groupName
+) {
+    ownerName = "?";
+    groupName = "?";
+
+    try {
+
+        int usersInode =
+            fileManager.findInode(
+                file,
+                spr,
+                "/users.txt"
+            );
+
+        if (usersInode == -1)
+            return;
+
+        Structs::Inodes inode =
+            fileManager.getInode(
+                file,
+                spr,
+                usersInode
+            );
+
+        string txt =
+            fileManager.getFileContent(
+                file,
+                spr,
+                inode
+            );
+
+        stringstream ss(txt);
+        string line;
+
+        while (getline(ss, line)) {
+
+            if (line.length() < 3)
+                continue;
+
+            vector<string> parts;
+
+            stringstream ls(line);
+            string field;
+
+            while (getline(ls, field, ','))
+                parts.push_back(field);
+
+            if (parts.size() < 3)
+                continue;
+
+            if (
+                (line[2] == 'U' || line[2] == 'u') &&
+                parts.size() >= 4
+            ) {
+
+                if (stoi(parts[0]) == uid)
+                    ownerName = parts[3];
+
+            } else if (
+                line[2] == 'G' ||
+                line[2] == 'g'
+            ) {
+
+                if (stoi(parts[0]) == gid)
+                    groupName = parts[2];
+            }
+        }
+
+    } catch (exception &e) {
+        // Mantener "?" si ocurre algún problema.
+    }
+}
+
+void Report::file(string p, string id, string filePath) {
+    try {
+
+        if (filePath.empty()) {
+            throw runtime_error(
+                "se requiere -path_file_ls para este reporte"
+            );
+        }
+
+        string path;
+
+        Structs::Partition partition =
+            mount.getmount(id, &path);
+
+        FILE *f = fopen(path.c_str(), "rb+");
+
+        if (f == NULL)
+            throw runtime_error("disco no existente");
+
+        Structs::Superblock spr;
+
+        fseek(
+            f,
+            partition.part_start,
+            SEEK_SET
+        );
+
+        fread(
+            &spr,
+            sizeof(Structs::Superblock),
+            1,
+            f
+        );
+
+        int inodeNum =
+            fileManager.findInode(
+                f,
+                spr,
+                filePath
+            );
+
+        if (inodeNum == -1) {
+            fclose(f);
+            throw runtime_error(
+                "no existe el archivo indicado"
+            );
+        }
+
+        Structs::Inodes inode =
+            fileManager.getInode(
+                f,
+                spr,
+                inodeNum
+            );
+
+        if (inode.i_type != 1) {
+            fclose(f);
+            throw runtime_error(
+                "la ruta indicada no corresponde a un archivo"
+            );
+        }
+
+        string content =
+            fileManager.getFileContent(
+                f,
+                spr,
+                inode
+            );
+
+        fclose(f);
+
+        string pd = p;
+        FILE *doc = fopen(pd.c_str(), "r");
+        if (doc == NULL) {
+            string cmm = "mkdir -p \"" + pd + "\"";
+            string cmm2 = "rmdir \"" + pd + "\"";
+            system(cmm.c_str());
+            system(cmm2.c_str());
+        } else {
+            fclose(doc);
+        }
+
+        ofstream outfile(p);
+        outfile << content;
+        outfile.close();
+
+        shared.response(
+            "REPORT",
+            "generado correctamente"
+        );
+
+    } catch (exception &e) {
+        shared.handler("REPORT", e.what());
+    }
+}
+
+void Report::ls(string p, string id, string lsPath) {
+    try {
+
+        if (lsPath.empty()) {
+            throw runtime_error(
+                "se requiere -path_file_ls para este reporte"
+            );
+        }
+
+        string path;
+
+        Structs::Partition partition =
+            mount.getmount(id, &path);
+
+        FILE *f = fopen(path.c_str(), "rb+");
+
+        if (f == NULL)
+            throw runtime_error("disco no existente");
+
+        Structs::Superblock spr;
+
+        fseek(
+            f,
+            partition.part_start,
+            SEEK_SET
+        );
+
+        fread(
+            &spr,
+            sizeof(Structs::Superblock),
+            1,
+            f
+        );
+
+        int inodeNum =
+            fileManager.findInode(
+                f,
+                spr,
+                lsPath
+            );
+
+        if (inodeNum == -1) {
+            fclose(f);
+            throw runtime_error(
+                "no existe la ruta indicada"
+            );
+        }
+
+        Structs::Inodes targetInode =
+            fileManager.getInode(
+                f,
+                spr,
+                inodeNum
+            );
+
+        string pd =
+            p.substr(
+                0,
+                p.find_last_of('.')
+            ) + ".dot";
+
+        FILE *doc = fopen(pd.c_str(), "r");
+        if (doc == NULL) {
+            string cmm = "mkdir -p \"" + pd + "\"";
+            string cmm2 = "rmdir \"" + pd + "\"";
+            system(cmm.c_str());
+            system(cmm2.c_str());
+        } else {
+            fclose(doc);
+        }
+
+        string content =
+            "digraph G{\n"
+            "rankdir=TB;\n"
+            "forcelabels=true;\n"
+            "graph [ dpi = \"600\" ];\n"
+            "node [shape=plaintext];\n";
+
+        content +=
+            "tabla [label = <<table>\n"
+            "<tr>"
+            "<td BGCOLOR=\"#ff6f00\">Permisos</td>"
+            "<td BGCOLOR=\"#ff6f00\">Owner</td>"
+            "<td BGCOLOR=\"#ff6f00\">Grupo</td>"
+            "<td BGCOLOR=\"#ff6f00\">Size</td>"
+            "<td BGCOLOR=\"#ff6f00\">Fecha</td>"
+            "<td BGCOLOR=\"#ff6f00\">Hora</td>"
+            "<td BGCOLOR=\"#ff6f00\">Tipo</td>"
+            "<td BGCOLOR=\"#ff6f00\">Name</td>"
+            "</tr>\n";
+
+        auto addRow =
+            [&](string name, Structs::Inodes inode) {
+
+            string owner;
+            string group;
+
+            resolveOwnerGroup(
+                f,
+                spr,
+                path,
+                inode.i_uid,
+                inode.i_gid,
+                owner,
+                group
+            );
+
+            time_t mt = inode.i_mtime;
+
+            struct tm *tmv =
+                localtime(&mt);
+
+            char fecha[16];
+            char hora[16];
+
+            strftime(
+                fecha,
+                16,
+                "%Y/%m/%d",
+                tmv
+            );
+
+            strftime(
+                hora,
+                16,
+                "%H:%M:%S",
+                tmv
+            );
+
+            string tipo =
+                (inode.i_type == 0)
+                ? "Carpeta"
+                : "Archivo";
+
+            string perms =
+                permString(
+                    inode.i_type,
+                    inode.i_perm
+                );
+
+            content +=
+                "<tr>"
+                "<td>" + perms + "</td>"
+                "<td>" + owner + "</td>"
+                "<td>" + group + "</td>"
+                "<td>" + to_string(inode.i_size) + "</td>"
+                "<td>" + string(fecha) + "</td>"
+                "<td>" + string(hora) + "</td>"
+                "<td>" + tipo + "</td>"
+                "<td>" + name + "</td>"
+                "</tr>\n";
+        };
+
+        if (targetInode.i_type == 0) {
+
+            vector<Structs::Content> entries =
+                fileManager.listFolder(
+                    f,
+                    spr,
+                    targetInode
+                );
+
+            for (auto &e : entries) {
+
+                Structs::Inodes childInode =
+                    fileManager.getInode(
+                        f,
+                        spr,
+                        e.b_inodo
+                    );
+
+                addRow(
+                    string(e.b_name),
+                    childInode
+                );
+            }
+
+        } else {
+
+            vector<string> comps =
+                fileManager.getpath(lsPath);
+
+            string name =
+                comps.empty()
+                ? lsPath
+                : comps.back();
+
+            addRow(
+                name,
+                targetInode
+            );
+        }
+
+        fclose(f);
+
+        content +=
+            "</table>>];\n"
+            "}\n";
+
+        ofstream outfile(pd);
+        outfile << content.c_str() << endl;
+        outfile.close();
+
+        string function =
+            "dot -T" + extOf(p) +
+            " " + pd + " -o " + p;
+
+        system(function.c_str());
+
+        shared.response(
+            "REPORT",
+            "generado correctamente"
+        );
+
     } catch (exception &e) {
         shared.handler("REPORT", e.what());
     }

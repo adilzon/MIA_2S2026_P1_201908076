@@ -1,0 +1,32 @@
+mkdisk -size=10 -unit=M -path="C:/tmp/reports_test/disco.mia"
+
+fdisk -size=2 -unit=M -path="C:/tmp/reports_test/disco.mia" -name=P1
+
+fdisk -size=2 -unit=M -path="C:/tmp/reports_test/disco.mia" -name=P2
+
+mount -path="C:/tmp/reports_test/disco.mia" -name=P1
+
+mkfs -id=761A -type=full
+
+login -user=root -pass=123 -id=761A
+
+mkfile -r -size=20 -path=/home/test.txt
+
+rep -id=761A -path="C:/tmp/reports_test/mbr1.jpg" -name=mbr
+
+rep -id=761A -path="C:/tmp/reports_test/mbr2.pdf" -name=mbr
+
+rep -id=761A -path="C:/tmp/reports_test/tree.pdf" -name=tree
+
+rep -id=761A -path="C:/tmp/reports_test/disk.jpg" -name=disk
+
+rep -id=761A -path="C:/tmp/reports_test/rfile.txt" -path_file_ls=/home/test.txt -name=file
+
+rep -id=761A -path="C:/tmp/reports_test/rls.jpg" -path_file_ls=/ -name=ls
+
+rep -id=761A -path="C:/tmp/reports_test/rls2.jpg" -path_file_ls=/home/test.txt -name=ls
+
+rep -id=761A -path="C:/tmp/reports_test/x.jpg" -name=journaling
+
+exit
+

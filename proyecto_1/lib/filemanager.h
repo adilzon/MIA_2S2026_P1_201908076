@@ -35,6 +35,15 @@ public:
              int gid,
              string username);
 
+    // --- Utilidades públicas para reportes ---
+    int findInode(FILE *file, Structs::Superblock spr, string path);
+
+    Structs::Inodes getInode(FILE *file, Structs::Superblock spr, int inodeNum);
+
+    string getFileContent(FILE *file, Structs::Superblock spr, Structs::Inodes inode);
+
+    vector<Structs::Content> listFolder(FILE *file, Structs::Superblock spr, Structs::Inodes inode);
+
     vector<string> getpath(string s);
 
     int getfree(Structs::Superblock spr, string pth, string t);

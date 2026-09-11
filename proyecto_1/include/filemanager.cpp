@@ -817,3 +817,84 @@ void FileManager::cat(vector<string> context, Structs::Partition partition, stri
         shared.handler("CAT", e.what());
     }
 }
+
+int FileManager::findInode(FILE *file, Structs::Superblock spr, string path) {
+    vector<string> comps = getpath(path);
+
+    if (comps.empty())
+        return 0;
+
+    string last = comps.back();
+    comps.pop_back();
+
+    int parentInodeNum;
+
+    try {
+        parentInodeNum = resolveParentPath(
+            file,
+            spr,
+            comps,
+            false,
+            1,
+            1,
+            "root"
+        );
+    }
+    catch (exception &e) {
+        return -1;
+    }
+
+    if (parentInodeNum == -1) return -1;
+
+    return locateChild(file, spr, parentInodeNum, last);
+}
+
+Structs::Inodes FileManager::getInode(
+    FILE *file,
+    Structs::Superblock spr,
+    int inodeNum
+) {
+    return readInode(file, spr, inodeNum);
+}
+
+string FileManager::getFileContent(
+    FILE *file,
+    Structs::Superblock spr,
+    Structs::Inodes inode
+) {
+    return readFileContent(file, spr, inode);
+}
+
+vector<Structs::Content> FileManager::listFolder(
+    FILE *file,
+    Structs::Superblock spr,
+    Structs::Inodes inode
+) {
+    vector<Structs::Content> entries;
+
+    vector<int> blocks = getFolderBlocks(file, spr, inode);
+
+    for (int b : blocks) {
+        Structs::Folderblock fb;
+
+        fseek(
+            file,
+            spr.s_block_start + (BLOCK_SIZE * b),
+            SEEK_SET
+        );
+
+        fread(&fb, sizeof(fb), 1, file);
+
+        for (int k = 0; k < 4; k++) {
+            if (fb.b_content[k].b_inodo != -1) {
+                string nm(fb.b_content[k].b_name);
+
+                if (nm != "." && nm != "..") {
+                    entries.push_back(fb.b_content[k]);
+                }
+            }
+        }
+    }
+
+    return entries;
+}
