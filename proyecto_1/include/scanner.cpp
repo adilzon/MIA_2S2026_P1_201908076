@@ -13,6 +13,8 @@
 #include <fstream>
 #include <vector>
 #include <cstdlib>
+#include <sstream>
+#include <regex>
 
 
 using namespace std;
@@ -409,6 +411,10 @@ void scanner::respuesta(string operacion, string mensaje)
 
 bool scanner::confirmar(string mensaje)
 {
+    if (API_MODE)
+    {
+        return API_CONFIRM_ANSWER;
+    }
     cout << mensaje << "[S/N]" << endl;
     string respuesta;
     getline(cin, respuesta);
@@ -478,4 +484,73 @@ void scanner::excec(string path)
     }
     input_file.close();
     return;
+}
+
+string scanner::stripAnsi(string s)
+{
+    regex ansi_regex("\x1B\\[[0-9;?]*[a-zA-Z]|\033\\[[0-9;?]*[a-zA-Z]");
+    return regex_replace(s, ansi_regex, "");
+}
+
+string scanner::execute(string command)
+{
+    stringstream buffer;
+    streambuf* old_buf = cout.rdbuf(buffer.rdbuf());
+
+    string texto = command;
+    if (!texto.empty() && texto.back() == '\r')
+    {
+        texto.pop_back();
+    }
+
+    if (!texto.empty())
+    {
+        string tk = token(texto);
+        texto.erase(0, tk.length() + 1);
+        vector<string> tks = split_tokens(texto);
+        functions(tk, tks);
+    }
+
+    cout.rdbuf(old_buf);
+    return stripAnsi(buffer.str());
+}
+
+string scanner::executeScript(string script)
+{
+    stringstream ss(script);
+    string line;
+    string result = "";
+
+    while (getline(ss, line))
+    {
+        if (!line.empty() && line.back() == '\r')
+        {
+            line.pop_back();
+        }
+
+        bool isEmpty = true;
+        for (char c : line)
+        {
+            if (!isspace(c))
+            {
+                isEmpty = false;
+                break;
+            }
+        }
+        if (isEmpty)
+        {
+            continue;
+        }
+
+        string out = execute(line);
+        if (!out.empty())
+        {
+            result += out;
+            if (result.back() != '\n')
+            {
+                result += "\n";
+            }
+        }
+    }
+    return result;
 }

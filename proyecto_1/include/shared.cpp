@@ -10,6 +10,9 @@
 
 using namespace std; 
 
+bool API_MODE = false;
+bool API_CONFIRM_ANSWER = false;
+
 Shared::Shared()
 {
 }
@@ -56,6 +59,10 @@ void Shared::handler(string title, string message)
 
 bool Shared::confirmation(string title, string message)
 {
+    if (API_MODE)
+    {
+        return API_CONFIRM_ANSWER;
+    }
     cout << "\033[1;36m Confirmación: \033"
          << "\033[0;36m(" + title + ")~> \033[0m"
          << "¿" + message + "? Y/N : ";

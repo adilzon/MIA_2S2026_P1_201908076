@@ -6,6 +6,9 @@
 
 using namespace std;
 
+extern bool API_MODE;
+extern bool API_CONFIRM_ANSWER;
+
 class Shared
 {
 public:

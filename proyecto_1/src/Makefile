@@ -1,7 +1,13 @@
 OBJECTS = main.o ../include/scanner.o ../include/disco.o ../include/mount.o ../include/shared.o ../include/filesystem.o ../include/filemanager.o ../include/report.o ../include/users.o
+API_OBJECTS = ../include/scanner.o ../include/disco.o ../include/mount.o ../include/shared.o ../include/filesystem.o ../include/filemanager.o ../include/report.o ../include/users.o
+
+all: run run_api
 
 run: $(OBJECTS)
 	g++ -o $@ $(OBJECTS)
+
+run_api: api_main.cpp $(API_OBJECTS)
+	g++ -std=c++17 -o $@ api_main.cpp $(API_OBJECTS) -lws2_32 -lpthread -I../lib
 
 main.o: main.cpp
 	g++ -c main.cpp -I../lib
@@ -30,4 +36,4 @@ main.o: main.cpp
 ../include/users.o: ../include/users.cpp
 	g++ -c ../include/users.cpp -I../lib -o ../include/users.o
 clean:
-	rm -f run main.o ../include/*.o
+	rm -f run run.exe run_api run_api.exe main.o ../include/*.o

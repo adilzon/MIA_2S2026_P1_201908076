@@ -21,6 +21,11 @@ public:
     void funcion_excec(vector<string> tokens);
     void excec(string path);
     bool confirmar(string mensaje);
+    string execute(string command);
+    string executeScript(string script);
+
+private:
+    string stripAnsi(string s);
 };
 
 #endif

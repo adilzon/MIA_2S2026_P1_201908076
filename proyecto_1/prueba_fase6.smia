@@ -1,0 +1,4 @@
+# Script de prueba Fase 6 .smia
+mkdisk -size=5 -unit=M -path=DiscoSmia.mia
+fdisk -size=1 -unit=M -path=DiscoSmia.mia -name=ParticionSmia
+mount -path=DiscoSmia.mia -name=ParticionSmia
