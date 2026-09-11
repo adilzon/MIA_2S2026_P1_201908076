@@ -7,7 +7,7 @@ run: $(OBJECTS)
 	g++ -o $@ $(OBJECTS)
 
 run_api: api_main.cpp $(API_OBJECTS)
-	g++ -std=c++17 -o $@ api_main.cpp $(API_OBJECTS) -lws2_32 -lpthread -I../lib
+	g++ -std=c++17 -o $@ api_main.cpp $(API_OBJECTS) -pthread -I../lib
 
 main.o: main.cpp
 	g++ -c main.cpp -I../lib
@@ -36,4 +36,4 @@ main.o: main.cpp
 ../include/users.o: ../include/users.cpp
 	g++ -c ../include/users.cpp -I../lib -o ../include/users.o
 clean:
-	rm -f run run.exe run_api run_api.exe main.o ../include/*.o
+	rm -f run run.exe run_api run_api.exe *.o ../include/*.o
