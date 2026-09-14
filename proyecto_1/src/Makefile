@@ -1,39 +1,53 @@
+ifeq ($(OS),Windows_NT)
+    LIBS_API = -lws2_32
+    RM_CMD = rm -f run run.exe run_api run_api.exe *.o ../include/*.o ../include/*.cpp.o 2>nul || del /f /q run.exe run_api.exe *.o ..\include\*.o 2>nul || true
+else
+    LIBS_API =
+    RM_CMD = rm -f run run.exe run_api run_api.exe *.o ../include/*.o ../include/*.cpp.o
+endif
+
+CXX = g++
+CXXFLAGS = -std=c++17 -I../lib
+
 OBJECTS = main.o ../include/scanner.o ../include/disco.o ../include/mount.o ../include/shared.o ../include/filesystem.o ../include/filemanager.o ../include/report.o ../include/users.o
 API_OBJECTS = ../include/scanner.o ../include/disco.o ../include/mount.o ../include/shared.o ../include/filesystem.o ../include/filemanager.o ../include/report.o ../include/users.o
 
 all: run run_api
 
 run: $(OBJECTS)
-	g++ -o $@ $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJECTS)
 
 run_api: api_main.cpp $(API_OBJECTS)
-	g++ -std=c++17 -o $@ api_main.cpp $(API_OBJECTS) -pthread -I../lib
+	$(CXX) $(CXXFLAGS) -o $@ api_main.cpp $(API_OBJECTS) -pthread $(LIBS_API)
 
 main.o: main.cpp
-	g++ -c main.cpp -I../lib
+	$(CXX) $(CXXFLAGS) -c main.cpp -o $@
 
 ../include/scanner.o: ../include/scanner.cpp
-	g++ -c ../include/scanner.cpp -I../lib -o ../include/scanner.o
+	$(CXX) $(CXXFLAGS) -c ../include/scanner.cpp -o $@
 
 ../include/disco.o: ../include/disco.cpp
-	g++ -c ../include/disco.cpp -I../lib -o ../include/disco.o
+	$(CXX) $(CXXFLAGS) -c ../include/disco.cpp -o $@
 
 ../include/mount.o: ../include/mount.cpp
-	g++ -c ../include/mount.cpp -I../lib -o ../include/mount.o
+	$(CXX) $(CXXFLAGS) -c ../include/mount.cpp -o $@
 
 ../include/shared.o: ../include/shared.cpp
-	g++ -c ../include/shared.cpp -I../lib -o ../include/shared.o
+	$(CXX) $(CXXFLAGS) -c ../include/shared.cpp -o $@
 
 ../include/filesystem.o: ../include/filesystem.cpp
-	g++ -c ../include/filesystem.cpp -I../lib -o ../include/filesystem.o
+	$(CXX) $(CXXFLAGS) -c ../include/filesystem.cpp -o $@
 
 ../include/filemanager.o: ../include/filemanager.cpp
-	g++ -c ../include/filemanager.cpp -I../lib -o ../include/filemanager.o
+	$(CXX) $(CXXFLAGS) -c ../include/filemanager.cpp -o $@
 
 ../include/report.o: ../include/report.cpp
-	g++ -c ../include/report.cpp -I../lib -o ../include/report.o
+	$(CXX) $(CXXFLAGS) -c ../include/report.cpp -o $@
 
 ../include/users.o: ../include/users.cpp
-	g++ -c ../include/users.cpp -I../lib -o ../include/users.o
+	$(CXX) $(CXXFLAGS) -c ../include/users.cpp -o $@
+
 clean:
-	rm -f run run.exe run_api run_api.exe *.o ../include/*.o
+	-$(RM_CMD)
+
+.PHONY: all clean run run_api

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+const FILE_URL = "http://localhost:8080/api/file";
+
 export default function App() {
   const [inputCode, setInputCode] = useState('');
   const [output, setOutput] = useState('');
@@ -7,6 +9,18 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [healthStatus, setHealthStatus] = useState('checking');
   const fileInputRef = useRef(null);
+
+  const [reportPath, setReportPath] = useState("");
+  const [reportUrl, setReportUrl] = useState("");
+  const [reportError, setReportError] = useState("");
+
+  const esPdf = reportPath.toLowerCase().endsWith(".pdf");
+  const esTxt = reportPath.toLowerCase().endsWith(".txt");
+  const esImagen =
+    reportPath.toLowerCase().endsWith(".jpg") ||
+    reportPath.toLowerCase().endsWith(".jpeg") ||
+    reportPath.toLowerCase().endsWith(".png") ||
+    reportPath.toLowerCase().endsWith(".svg");
 
   // Check health on mount and periodically
   useEffect(() => {
@@ -75,12 +89,45 @@ export default function App() {
     }
   };
 
+  const verReporte = async () => {
+    setReportError("");
+    setReportUrl("");
+
+    if (!reportPath.trim())
+      return;
+
+    const url =
+      `${FILE_URL}?path=${encodeURIComponent(reportPath)}`;
+
+    try {
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        const msg = await res.text();
+        setReportError(`Error ${res.status}: ${msg}`);
+        return;
+      }
+
+      const blob = await res.blob();
+
+      setReportUrl(URL.createObjectURL(blob));
+
+    } catch (err) {
+      setReportError(
+        "No se pudo cargar el reporte: " + err.message
+      );
+    }
+  };
+
   const handleClear = () => {
     setInputCode('');
     setOutput('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    setReportPath("");
+    setReportUrl("");
+    setReportError("");
   };
 
   return (
@@ -182,6 +229,72 @@ export default function App() {
               placeholder="La respuesta del backend C++ aparecerá aquí..."
               style={styles.textareaOutput}
             />
+          </div>
+        </div>
+
+        {/* Report Visualization Section */}
+        <div style={styles.reportCard}>
+          <div style={styles.panelHeader}>
+            <span>📊 Visualización de Reportes</span>
+          </div>
+          <div style={styles.reportContent}>
+            <div style={styles.reportControls}>
+              <input
+                type="text"
+                placeholder="/home/user/reports/mbr1.jpg"
+                value={reportPath}
+                onChange={(e) => setReportPath(e.target.value)}
+                style={styles.reportInput}
+              />
+              <button onClick={verReporte} style={styles.reportBtn}>
+                Ver reporte
+              </button>
+            </div>
+
+            {reportError && (
+              <div style={{ color: "red", marginTop: "0.5rem" }}>
+                {reportError}
+              </div>
+            )}
+
+            {reportUrl && esImagen && (
+              <img
+                src={reportUrl}
+                alt="Reporte"
+                style={{
+                  maxWidth: "100%",
+                  marginTop: "1rem",
+                  border: "1px solid #444"
+                }}
+              />
+            )}
+
+            {reportUrl && esPdf && (
+              <iframe
+                src={reportUrl}
+                title="Reporte PDF"
+                style={{
+                  width: "100%",
+                  height: "600px",
+                  marginTop: "1rem",
+                  border: "1px solid #444"
+                }}
+              />
+            )}
+
+            {reportUrl && esTxt && (
+              <iframe
+                src={reportUrl}
+                title="Reporte TXT"
+                style={{
+                  width: "100%",
+                  height: "300px",
+                  marginTop: "1rem",
+                  border: "1px solid #444",
+                  background: "#fff"
+                }}
+              />
+            )}
           </div>
         </div>
       </main>
@@ -406,5 +519,45 @@ const styles = {
     borderTop: '1px solid #334155',
     fontSize: '0.8rem',
     color: '#64748b',
+  },
+  reportCard: {
+    backgroundColor: '#1e293b',
+    borderRadius: '10px',
+    border: '1px solid #334155',
+    overflow: 'hidden',
+  },
+  reportContent: {
+    padding: '1.2rem',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  reportControls: {
+    display: 'flex',
+    gap: '0.8rem',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  reportInput: {
+    flex: 1,
+    minWidth: '240px',
+    backgroundColor: '#0f172a',
+    color: '#38bdf8',
+    border: '1px solid #334155',
+    borderRadius: '6px',
+    padding: '0.6rem 1rem',
+    fontSize: '0.95rem',
+    fontFamily: '"Fira Code", "Courier New", monospace',
+    outline: 'none',
+  },
+  reportBtn: {
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    border: 'none',
+    padding: '0.6rem 1.4rem',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontSize: '0.9rem',
+    transition: 'background-color 0.2s',
   },
 };
