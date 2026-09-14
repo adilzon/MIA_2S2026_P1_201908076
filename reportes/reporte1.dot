@@ -1,0 +1,52 @@
+digraph G{
+rankdir=TB;
+graph [ dpi = "600" ]; 
+forcelabels= true;
+node [shape = plaintext];
+general [label = <<table>
+<tr><td COLSPAN = '2' BGCOLOR="#102027"><font color="white">MBR</font></td></tr>
+<tr><td BGCOLOR="#ff6f00">NOMBRE</td><td BGCOLOR="#ff6f00" >VALOR</td></tr>
+<tr>
+<td>mbr_tamaño</td>
+<td>-1149239296</td>
+</tr>
+<tr>
+<td>mbr_fecha_creación</td>
+<td>2026/09/13 21:58:32</td>
+</tr>
+<tr>
+<td>mbr_disk_signature</td>
+<td>1063</td>
+</tr>
+<tr>
+<td>Disk_fit</td>
+<td>F</td>
+</tr>
+<tr>
+<td>part_status_1</td>
+<td>1 </td >
+</tr>
+<tr>
+<td>part_type_1</td>
+<td>P</td>
+</tr>
+<tr>
+<td>part_fit_1</td>
+<td>B</td>
+</tr>
+<tr>
+<td>part_start_1</td>
+<td>168</td>
+</tr>
+<tr>
+<td>part_size_1</td>
+<td>102400</td>
+</tr>
+<tr>
+<td>part_name_1</td>
+<td>Part1</td>
+</tr>
+</table>>];
+
+}
+

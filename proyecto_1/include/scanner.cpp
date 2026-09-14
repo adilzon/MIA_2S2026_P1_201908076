@@ -51,7 +51,7 @@ void scanner::start()
         \___)=(___/
 
         Linux Proyecto 1 
-        W I L L I A M S  B R A M L L E Y  C O N S T A N Z A  O S C A L
+        ADILZON ALFREDO VELASQUEZ HERNANDEZ 201908076
 
 )";
 
